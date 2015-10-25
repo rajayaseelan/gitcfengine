@@ -1,0 +1,108 @@
+body file control
+{
+      namespace => "cfdc_packages";
+}
+
+bundle agent removed(runenv, metadata, pkgs_removed)
+{
+##############################################################################
+## Standard template for Design Center 3.6.0 sketches.                      ##
+##############################################################################
+
+  vars:
+      "vars" slist => getindices(runenv);
+      "$(vars)" string => "$(runenv[$(vars)])";
+      # often you need a unique value for the current run through a
+      # bundle, especially if you use if_repaired and such.  The
+      # canon_prefix will give you that.
+      "canon_prefix" string => canonify("$(prefix)");
+      "dcbundle" string => concat("[$(metadata[name])] ", $(this.namespace), ':', $(this.bundle));
+
+    dc_verbose::
+      # pretty-print the authors and dependencies
+      "dependencies" string => format("%S", "metadata[depends]");
+      "authors" string => format("%S", "metadata[authors]");
+
+  classes:
+      "dc_$(vars)" expression => "$($(vars))";
+      "not_$(vars)" not => "$($(vars))";
+
+  reports:
+    dc_verbose::
+      "$(dcbundle): $(metadata[name]) license = $(metadata[license])";
+      "$(dcbundle): $(metadata[name]) dependencies = $(dependencies)";
+      "$(dcbundle): $(metadata[name]) version $(metadata[version]) by $(authors) starting up...";
+
+      "$(dcbundle): imported environment var '$(vars)' with value '$($(vars))'";
+
+      "$(dcbundle): imported environment class '$(vars)' because '$($(vars))' was true"
+      ifvarclass => "dc_$(vars)";
+
+    dc_verbose::
+      # use the "dc_verbose" context to show the sketch operation (for the user)
+      "$(dcbundle): running in verbose mode";
+
+##############################################################################
+## end of template                                                          ##
+##############################################################################
+
+  methods:
+      "install" usebundle => default:package_absent($(pkgs_removed));
+}
+
+bundle agent remove_from_file(runenv, metadata, file)
+{
+##############################################################################
+## Standard template for Design Center 3.6.0 sketches.                      ##
+##############################################################################
+
+  vars:
+      "vars" slist => getindices(runenv);
+      "$(vars)" string => "$(runenv[$(vars)])";
+      # often you need a unique value for the current run through a
+      # bundle, especially if you use if_repaired and such.  The
+      # canon_prefix will give you that.
+      "canon_prefix" string => canonify("$(prefix)");
+      "dcbundle" string => concat("[$(metadata[name])] ", $(this.namespace), ':', $(this.bundle));
+
+    dc_verbose::
+      # pretty-print the authors and dependencies
+      "dependencies" string => format("%S", "metadata[depends]");
+      "authors" string => format("%S", "metadata[authors]");
+
+  classes:
+      "dc_$(vars)" expression => "$($(vars))";
+      "not_$(vars)" not => "$($(vars))";
+
+  reports:
+    dc_verbose::
+      "$(dcbundle): $(metadata[name]) license = $(metadata[license])";
+      "$(dcbundle): $(metadata[name]) dependencies = $(dependencies)";
+      "$(dcbundle): $(metadata[name]) version $(metadata[version]) by $(authors) starting up...";
+
+      "$(dcbundle): imported environment var '$(vars)' with value '$($(vars))'";
+
+      "$(dcbundle): imported environment class '$(vars)' because '$($(vars))' was true"
+      ifvarclass => "dc_$(vars)";
+
+    dc_verbose::
+      # use the "dc_verbose" context to show the sketch operation (for the user)
+      "$(dcbundle): running in verbose mode";
+
+##############################################################################
+## end of template                                                          ##
+##############################################################################
+  vars:
+      "todo" slist => readstringlist($(file), "#.*", "\n", 10000, 500000);
+
+  classes:
+      "have_todo" expression => isvariable("todo");
+
+  methods:
+    have_todo::
+      "install" usebundle => default:package_absent($(todo));
+
+  reports:
+    !have_todo::
+      "$(dcbundle): file $(file) could not be parsed to get the file list";
+}
