@@ -1,0 +1,49 @@
+# Design Center runfile
+
+body file control
+{
+      inputs => { "sketches/package_management/packages_installed/main.cf" };
+}
+
+bundle common cfsketch_g
+{
+  vars:
+      # legacy list, please ignore
+      "inputs" slist => { "cf_null" };
+}
+
+bundle agent cfsketch_run
+{
+  classes:
+      "092b04a40fdd4cb8bfdb685f2c4a0328_verbose" expression => classmatch("");
+      "092b04a40fdd4cb8bfdb685f2c4a0328_activated_0" expression => classmatch("cfengine_3");
+      "092b04a40fdd4cb8bfdb685f2c4a0328_activated" and => { '092b04a40fdd4cb8bfdb685f2c4a0328_activated_0' };
+  vars:
+      "092b04a40fdd4cb8bfdb685f2c4a0328" data => parsejson('{"activated":"092b04a40fdd4cb8bfdb685f2c4a0328_activated","test":false,"verbose":"092b04a40fdd4cb8bfdb685f2c4a0328_verbose"}');
+      # array 'metadata' from definition sketch metadata, activation __install_apache2_for_developers_001_Packages_installed_from_list
+      "__install_apache2_for_developers_001_Packages_installed_from_list_metadata" data => parsejson('{"activation":{"environmentLabel":"cfengine_3","identifier":"install apache2 for developers","timestamp":1445753879},"api":{"Install specific packages":{"type":"bundle_options"},"metadata":{"type":"metadata"},"pkgs_add":{"type":"list"},"runenv":{"type":"environment"},"state":{"type":"string"}},"authors":["Eystein Stenberg <eystein.maloy.stenberg@cfengine.com>"],"bundle_options":{"name":"Install specific packages","single_use":true},"depends":["CFEngine::sketch_template"],"license":"MIT","location":"sketches/package_management/packages_installed","manifest":["README.md","main.cf","params/demo.json","test.pl"],"manifest_cf":["main.cf"],"manifest_docs":["README.md"],"manifest_exe":[],"manifest_extra":["params/demo.json"],"manifest_test":["test.pl"],"name":"Packages::installed","tags":["cfdc","packages","enterprise_compatible","enterprise_3_6"],"version":"1.0.0"}');
+
+      # list 'pkgs_add' from definition 599305e7962c31ee761ea0a9eff92686, activation __install_apache2_for_developers_001_Packages_installed_from_list
+      "__install_apache2_for_developers_001_Packages_installed_from_list_pkgs_add" data => parsejson('["apache2"]');
+
+  methods:
+    any::
+      "cfsketch_g" usebundle => "cfsketch_g";
+
+      # invocation lines
+    092b04a40fdd4cb8bfdb685f2c4a0328_activated::
+      "__install_apache2_for_developers_001_Packages_installed_from_list" -> { "install apache2 for developers", "Packages::installed", "from_list", "89f5a4401ea1c1852cea6968c71c8013" }
+      usebundle => cfdc_packages:from_list(@(cfsketch_run.092b04a40fdd4cb8bfdb685f2c4a0328),
+          @(cfsketch_run.__install_apache2_for_developers_001_Packages_installed_from_list_metadata),
+          @(cfsketch_run.__install_apache2_for_developers_001_Packages_installed_from_list_pkgs_add),
+          'addupdate'),
+      inherit => "true", handle => "dc_method_call___install_apache2_for_developers_001_Packages_installed_from_list",
+      ifvarclass => "(centos|debian|redhat|ubuntu)",
+      useresult => "return___install_apache2_for_developers_001_Packages_installed_from_list";
+
+
+
+  reports:
+    inform_mode::
+      "activation __install_apache2_for_developers_001_Packages_installed_from_list could not run because it requires classes (centos|debian|redhat|ubuntu)" handle => "dc_return_report___install_apache2_for_developers_001_Packages_installed_from_list", ifvarclass => "inform_mode.!((centos|debian|redhat|ubuntu))";
+}
