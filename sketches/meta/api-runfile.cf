@@ -2,7 +2,7 @@
 
 body file control
 {
-      inputs => { "sketches/package_management/packages_installed/main.cf" };
+      inputs => { "sketches/package_management/packages_installed/main.cf", "sketches/package_management/packages_removed/main.cf" };
 }
 
 bundle common cfsketch_g
@@ -26,6 +26,12 @@ bundle agent cfsketch_run
       # list 'pkgs_add' from definition 599305e7962c31ee761ea0a9eff92686, activation __install_apache2_for_developers_001_Packages_installed_from_list
       "__install_apache2_for_developers_001_Packages_installed_from_list_pkgs_add" data => parsejson('["apache2"]');
 
+      # array 'metadata' from definition sketch metadata, activation __Test_activation_002_Packages_removed_removed
+      "__Test_activation_002_Packages_removed_removed_metadata" data => parsejson('{"activation":{"environmentLabel":"cfengine_3","identifier":"Test activation","timestamp":1445761942},"api":{"Specify packages to be removed":{"type":"bundle_options"},"metadata":{"type":"metadata"},"pkgs_removed":{"type":"list"},"runenv":{"type":"environment"}},"authors":["Eystein Stenberg <eystein.maloy.stenberg@cfengine.com>"],"bundle_options":{"name":"Specify packages to be removed","single_use":true},"depends":["CFEngine::sketch_template"],"license":"MIT","location":"sketches/package_management/packages_removed","manifest":["README.md","main.cf","params/demo.json"],"manifest_cf":["main.cf"],"manifest_docs":["README.md"],"manifest_exe":[],"manifest_extra":["params/demo.json"],"manifest_test":[],"name":"Packages::removed","tags":["cfdc","packages","enterprise_compatible","enterprise_3_6"],"version":"1.0.0"}');
+
+      # list 'pkgs_removed' from definition 4c987b765926549d1debe7a379417942, activation __Test_activation_002_Packages_removed_removed
+      "__Test_activation_002_Packages_removed_removed_pkgs_removed" data => parsejson('["iis","firefox","chrome"]');
+
   methods:
     any::
       "cfsketch_g" usebundle => "cfsketch_g";
@@ -42,8 +48,19 @@ bundle agent cfsketch_run
       useresult => "return___install_apache2_for_developers_001_Packages_installed_from_list";
 
 
+    092b04a40fdd4cb8bfdb685f2c4a0328_activated::
+      "__Test_activation_002_Packages_removed_removed" -> { "Test activation", "Packages::removed", "removed", "c91002aa80b51b18657610ca3c550506" }
+      usebundle => cfdc_packages:removed(@(cfsketch_run.092b04a40fdd4cb8bfdb685f2c4a0328),
+          @(cfsketch_run.__Test_activation_002_Packages_removed_removed_metadata),
+          @(cfsketch_run.__Test_activation_002_Packages_removed_removed_pkgs_removed)),
+      inherit => "true", handle => "dc_method_call___Test_activation_002_Packages_removed_removed",
+      ifvarclass => "(centos|debian|redhat|ubuntu)",
+      useresult => "return___Test_activation_002_Packages_removed_removed";
+
+
 
   reports:
     inform_mode::
       "activation __install_apache2_for_developers_001_Packages_installed_from_list could not run because it requires classes (centos|debian|redhat|ubuntu)" handle => "dc_return_report___install_apache2_for_developers_001_Packages_installed_from_list", ifvarclass => "inform_mode.!((centos|debian|redhat|ubuntu))";
+      "activation __Test_activation_002_Packages_removed_removed could not run because it requires classes (centos|debian|redhat|ubuntu)" handle => "dc_return_report___Test_activation_002_Packages_removed_removed", ifvarclass => "inform_mode.!((centos|debian|redhat|ubuntu))";
 }
