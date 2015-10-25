@@ -102,8 +102,8 @@ bundle common update_def
 
       # NOTE THAT ENABLING THIS BY DEFAULT *WILL* OVERWRITE THE HUB'S $(sys.workdir)/masterfiles
 
-      #"cfengine_internal_masterfiles_update" expression => "enterprise.!(cfengine_3_4|cfengine_3_5)";
-      "cfengine_internal_masterfiles_update" expression => "!any";
+      "cfengine_internal_masterfiles_update" expression => "enterprise.!(cfengine_3_4|cfengine_3_5)";
+      #"cfengine_internal_masterfiles_update" expression => "!any";
 
       # Transfer policies and binaries with encryption
       # you can also request it from the command line with
